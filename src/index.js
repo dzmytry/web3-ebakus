@@ -44,9 +44,7 @@ const ebakus = web3 => {
     callback = callback || function() {};
 
     if (!wasmSupported) {
-      error = new Error(
-        "Wasm is not supported by browser. CryptoNight can't load."
-      );
+      error = new Error('Wasm is not supported by browser. CryptoNight can\'t load.');
 
       callback(error);
       return Promise.reject(error);
