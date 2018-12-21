@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+        <title>Web3Ebakus example</title>
+        <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js" integrity="sha256-nWBTbvxhJgjslRyuAKJHK+XcZPlCnmIAAMixz6EefVk=" crossorigin="anonymous"></script>
+        <script src="../lib/ebakus.js"></script>
+        <script>
+            const web3 = Web3Ebakus(new Web3());
+
+            var test = {
+                address: '0x2c7536E3605D9C16a7a3D7b1898e529396a65c23',
+                iban: 'XE0556YCRTEZ9JALZBSCXOK4UJ5F3HN03DV',
+                privateKey:
+                    '0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318',
+                transaction: {
+                    chainId: 1,
+                    nonce: 0,
+                    gasPrice: '20000000000',
+                    gas: 21000,
+                    to: '0xF0109fC8DF283027b6285cc889F5aA624EaC1F55',
+                    value: '1000000000',
+                    data: '',
+                },
+                // signature from eth_signTransaction
+                rawTransaction:
+                    '0xf868808504a817c80082520894f0109fc8df283027b6285cc889f5aa624eac1f55843b9aca008026a0afa02d193471bb974081585daabf8a751d4decbb519604ac7df612cc11e9226da04bf1bd55e82cebb2b09ed39bbffe35107ea611fa212c2d9a1f1ada4952077118',
+                oldSignature:
+                    '0xf868808504a817c80082520894f0109fc8df283027b6285cc889f5aa624eac1f55843b9aca008026a0afa02d193471bb974081585daabf8a751d4decbb519604ac7df612cc11e9226da04bf1bd55e82cebb2b09ed39bbffe35107ea611fa212c2d9a1f1ada4952077118',
+            };
+
+            function testPlain(kill) {
+                var ctrl = {};
+
+                var logger = setInterval(() => {
+                    console.log('isRunning', ctrl.isRunning());
+                    console.log('getCurrentWorkNonce', ctrl.getCurrentWorkNonce());
+
+                    if (!ctrl.isRunning() && ctrl.getCurrentWorkNonce() > 0) {
+                        clearInterval(logger);
+                    }
+                }, 500);
+
+                if (kill) {
+                    setTimeout(() => {
+                        clearInterval(logger);
+                        ctrl.kill();
+                    }, 3000);
+                }
+
+                web3.eth.calculateWorkForTransaction(test.transaction, 1000, ctrl, null)
+                    .then(txWithPow => {
+                        console.log('txWithPow: ', txWithPow);
+                        console.log('workNonce: ', txWithPow.workNonce);
+
+                        if (txWithPow.workNonce != '0x6e') {
+                            throw `Oops, wanted: '0x6e', received: '${txWithPow.workNonce}'`;
+                        }
+                    })
+                    .catch(err => console.error(err));
+            };
+
+            function testAccount() {
+            var testAccount = web3.eth.accounts.privateKeyToAccount(test.privateKey);
+
+            testAccount.calculateWorkForTransaction(test.transaction, 32)
+                .then(txWithPow => {
+                    console.log('txWithPow: ', txWithPow);
+                    console.log('workNonce: ', txWithPow.workNonce);
+                    return testAccount.signTransaction(txWithPow);
+                })
+                .then(signedTx => console.log('signedTx', signedTx))
+                .catch(err => console.error(err));
+            };
+        </script>
+    </head>
+    <body>
+        <div id="container">
+            <h1>Web3Ebakus examples</h1>
+            <p>
+                <small>Please open your browser developer console while running the examples.</small>
+            </p>
+            <p>
+                <button onclick="testPlain()">Calculate Work as plain function</button>
+                <button onclick="testPlain(true)">Calculate Work and kill worker after 3 seconds</button>
+                <button onclick="testAccount()">Calculate Work for account</button>
+            </p>
+        </div>
+</html>
