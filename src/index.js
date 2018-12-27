@@ -7,7 +7,7 @@
 
 import RLP from 'eth-lib/lib/rlp';
 import Bytes from 'eth-lib/lib/bytes';
-import calculatePowNonce from './calculateWorkNonce.node.js';
+import calculateWorkNonce from './calculateWorkNonce.node.js';
 
 const wasmSupported = (() => {
   try {
@@ -61,7 +61,7 @@ const ebakus = web3 => {
         error = new Error('"targetDifficulty" is missing');
       }
 
-      if (!tx.gas && !tx.gasLimit) {
+      if (!tx.gas) {
         error = new Error('"gas" is missing');
       }
 
@@ -77,24 +77,20 @@ const ebakus = web3 => {
       try {
         tx = web3.extend.formatters.inputCallFormatter(tx);
 
-        let transaction = tx;
-        transaction.to = tx.to || '0x';
-        transaction.data = tx.data || '0x';
-        transaction.value = tx.value || '0x';
-        transaction.chainId = web3.utils.numberToHex(tx.chainId);
-        transaction.workNonce = '0x';
-
         const rlpEncoded = RLP.encode([
-          Bytes.fromNat(transaction.nonce),
-          Bytes.fromNat(transaction.gas),
-          transaction.to.toLowerCase(),
-          Bytes.fromNat(transaction.value),
-          transaction.data,
+          Bytes.fromNat(tx.nonce),
+          Bytes.fromNat(/* workNonce */ '0x'),
+          Bytes.fromNat(tx.gas),
+          tx.to ? tx.to.toLowerCase() : '',
+          Bytes.fromNat(tx.value || '0x'),
+          tx.data,
+          Bytes.fromNat(web3.utils.numberToHex(tx.chainId) || '0x1'),
+          '0x',
+          '0x',
         ]);
 
-        return calculatePowNonce.then(calc => {
-          const workNonce = calc(rlpEncoded, targetDifficulty);
-          console.log('workNonce2: ', workNonce);
+        return calculateWorkNonce.then(calcFn => {
+          const workNonce = calcFn(rlpEncoded, targetDifficulty);
 
           tx.workNonce = web3.utils.numberToHex(workNonce);
 
