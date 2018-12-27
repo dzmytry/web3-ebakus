@@ -1,23 +1,15 @@
-// Credits to AnthumChris https://gist.github.com/AnthumChris/c1b5f5526b966011dac39fbb17dacafe
-// Module.ready resolves when WASM instantiates. (ready is now a property and not function via @surma fork)
-Module.ready = new Promise(function(resolve, reject) {
-  addOnPreMain(function() {
-    var api = {
-      cryptonight: Module.cwrap('cryptonight', '', [
-        /*'number', 'number', 'number', 'number', 'number'*/
-      ]),
-      Malloc: Module._malloc,
-    };
-    resolve(api);
-  });
-
-  // Propagate error to Module.ready.catch()
-  // WARNING: this is a hack based Emscripten's current abort() implementation
-  // and could break in the future.
-  // Rewrite existing abort(what) function to reject Promise before it executes.
-  var origAbort = this.abort;
-  this.abort = function(what) {
-    reject(Error(what));
-    origAbort.call(this, what);
+// Credits to david-polak https://github.com/kripken/emscripten/issues/5820#issuecomment-385722568
+Module['ready'] = new Promise(function(resolve, reject) {
+  delete Module['then'];
+  Module['onAbort'] = function(what) {
+    reject(what);
   };
+  addOnPostRun(function() {
+    Module['cryptonight'] = Module.cwrap('cryptonight', '', [
+      /*'number', 'number', 'number', 'number', 'number'*/
+    ]);
+    Module['Malloc'] = Module._malloc;
+
+    resolve(Module);
+  });
 });
