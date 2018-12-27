@@ -53,8 +53,8 @@
                         console.log('txWithPow: ', txWithPow);
                         console.log('workNonce: ', txWithPow.workNonce);
 
-                        if (txWithPow.workNonce != '0x6e') {
-                            throw `Oops, wanted: '0x6e', received: '${txWithPow.workNonce}'`;
+                        if (txWithPow.workNonce != '0xe3') {
+                            throw `Oops, wanted: '0xe3', received: '${txWithPow.workNonce}'`;
                         }
                     })
                     .catch(err => console.error(err));
