@@ -29,7 +29,7 @@ export default new Promise(function(resolve, reject) {
     }
 
     // calculate a cryptonight hash
-    function calculatePowNonce(hash, targetDifficulty) {
+    function calculateWorkNonce(hash, targetDifficulty) {
       let currentWorkNonce = 0;
 
       let bits = Math.log2(targetDifficulty);
@@ -76,6 +76,6 @@ export default new Promise(function(resolve, reject) {
       return currentWorkNonce;
     }
 
-    resolve(calculatePowNonce);
+    resolve(calculateWorkNonce);
   });
 });

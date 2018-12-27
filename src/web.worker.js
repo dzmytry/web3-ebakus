@@ -58,7 +58,7 @@ onmessage = function(e) {
   });
 
   // calculate a cryptonight hash
-  function calculatePowNonce() {
+  function calculateWorkNonce() {
     let bits = Math.log2(targetDifficulty);
     bits = Math.ceil(bits);
     const target = bits;
@@ -103,7 +103,7 @@ onmessage = function(e) {
     } while (bestBit <= target);
   }
 
-  calculatePowNonce();
+  calculateWorkNonce();
 
   // emit the final workNonce calculated for transaction
   postMessage({
