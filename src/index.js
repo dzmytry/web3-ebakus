@@ -33,7 +33,6 @@ const ebakus = web3 => {
   web3.eth.calculateWorkForTransaction = function calculateWorkForTransaction(
     tx,
     targetDifficulty,
-    ctrl,
     callback
   ) {
     const _this = this;
