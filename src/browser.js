@@ -5,9 +5,11 @@
  * @date 2018
  */
 
+import Promise from 'any-promise';
 import RLP from 'eth-lib/lib/rlp';
 import Bytes from 'eth-lib/lib/bytes';
-import calculatePowNonce from './calculateWorkNonce.node.js';
+
+import Worker from 'worker-loader?inline&name=[name].[ext]!./web.worker.js';
 
 const wasmSupported = (() => {
   try {
@@ -57,7 +59,7 @@ const ebakus = web3 => {
       return Promise.reject(error);
     }
 
-    const handleTx = tx => {
+    const calculatePowNonce = tx => {
       if (!targetDifficulty) {
         error = new Error('"targetDifficulty" is missing');
       }
@@ -93,14 +95,70 @@ const ebakus = web3 => {
           transaction.data,
         ]);
 
-        return calculatePowNonce.then(calc => {
-          const workNonce = calc(rlpEncoded, targetDifficulty);
-          console.log('workNonce2: ', workNonce);
+        const job = {
+          hash: rlpEncoded,
+          targetDifficulty,
+        };
 
-          tx.workNonce = web3.utils.numberToHex(workNonce);
+        return new Promise(function(resolve, reject) {
+          let currentWorkNonce = 0;
+          let isRunning = false;
+          const worker = new Worker();
 
-          callback(null, tx);
-          return tx;
+          /**
+           * worker can emit the following payloads:
+           * 1. { cmd: 'ready' }
+           * 2. { cmd: 'current', workNonce: number }
+           * 3. { cmd: 'finished', workNonce: number }
+           */
+          worker.onmessage = function onMessage(e) {
+            const {
+              target: wrk,
+              data: { cmd, workNonce },
+            } = e;
+
+            switch (cmd) {
+              case 'ready': {
+                isRunning = true;
+                worker.postMessage(job);
+                break;
+              }
+
+              case 'current': {
+                currentWorkNonce = workNonce;
+                break;
+              }
+
+              case 'finished': {
+                tx.workNonce = web3.utils.numberToHex(workNonce);
+
+                isRunning = false;
+                wrk.terminate();
+
+                callback(null, tx);
+                resolve(tx);
+                break;
+              }
+
+              default: {
+                console.warn('Unknown data from worker', e.data);
+              }
+            }
+          };
+
+          // allow the user to check status of the worker
+          if (typeof ctrl === 'object') {
+            ctrl.isRunning = () => isRunning;
+            ctrl.getCurrentWorkNonce = () => currentWorkNonce;
+            ctrl.kill = () => {
+              isRunning = false;
+              currentWorkNonce = 0;
+
+              worker.terminate();
+
+              reject('Worker terminated by user');
+            };
+          }
         });
       } catch (e) {
         callback(e);
@@ -108,7 +166,7 @@ const ebakus = web3 => {
       }
     };
 
-    return Promise.resolve(handleTx(tx));
+    return Promise.resolve(calculatePowNonce(tx));
   };
 
   // keep ref to web3 original function
