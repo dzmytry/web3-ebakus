@@ -1,15 +1,17 @@
 import path from 'path';
+import merge from 'webpack-merge';
 import nodeExternals from 'webpack-node-externals';
 
 import pkg from './package.json';
 var env = process.env.NODE_ENV || 'development';
 
-module.exports = {
+/*
+ * Common configuration chunk to be used for both
+ * client-side and server-side bundles
+ */
+
+const baseConfig = {
   mode: env,
-  target: 'web',
-  node: {
-    fs: 'empty',
-  },
   entry: {
     ebakus: './src/index.js',
   },
@@ -38,17 +40,6 @@ module.exports = {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
     extensions: ['.json', '.js'],
   },
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        loader: 'babel-loader',
-      },
-    ],
-  },
-  // optimization: {
-  //   occurrenceOrder: true, // To keep filename consistent between different modes (for example building only)
-  // },
   stats: {
     colors: true,
   },
@@ -57,3 +48,30 @@ module.exports = {
     contentBase: './lib',
   },
 };
+
+const clientConfig = {
+  target: 'web',
+  node: {
+    fs: 'empty',
+  },
+  output: {
+    filename: '[name].browser.js',
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+      },
+    ],
+  },
+};
+
+const serverConfig = {
+  target: 'node',
+};
+
+module.exports = [
+  merge(baseConfig, clientConfig),
+  merge(baseConfig, serverConfig),
+];

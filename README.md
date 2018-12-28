@@ -74,3 +74,7 @@ The `calculateWorkForTransaction` accepts two additional arguments.
   ```
 
 * `callback`: you can read more [here](https://web3js.readthedocs.io/en/1.0/callbacks-promises-events.html)
+
+# Node.js
+
+This package can be used node.js environment with the limitation that `ctrlWorkForTransactionState` is not available and that at the moment it blocks the main event loop.
