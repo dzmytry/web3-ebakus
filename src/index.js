@@ -83,7 +83,7 @@ const ebakus = web3 => {
           Bytes.fromNat(tx.gas),
           tx.to ? tx.to.toLowerCase() : '',
           Bytes.fromNat(tx.value || '0x'),
-          tx.data,
+          tx.data || '0x',
           Bytes.fromNat(web3.utils.numberToHex(tx.chainId) || '0x1'),
           '0x',
           '0x',
