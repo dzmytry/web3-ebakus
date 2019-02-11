@@ -2,7 +2,12 @@
   "name": "web3-ebakus",
   "version": "1.0.0",
   "description": "Web3 module to add transaction PoW for Ebakus.",
+  "homepage": "https://www.ebakus.com/",
   "repository": "https://github.com/ebakus/web3-ebakus",
+  "author": {
+    "name": "Chris Ziogas",
+    "email": "chris@ebakus.com"
+  },
   "license": "MIT",
   "browser": {
     "./src/index.js": "./src/browser.js"
@@ -24,7 +29,17 @@
     "@babel/preset-env": "^7.2.0",
     "@babel/register": "^7.0.0",
     "babel-loader": "^8.0.4",
+    "clean-webpack-plugin": "^1.0.0",
+    "eslint": "^5.12.0",
+    "eslint-config-prettier": "^3.5.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-standard": "^4.0.0",
     "url-loader": "^1.1.2",
+    "husky": "^1.3.1",
+    "lint-staged": "^8.1.0",
+    "prettier": "^1.15.3",
+    "terser-webpack-plugin": "^1.2.1",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10",
@@ -37,6 +52,24 @@
     "start": "webpack-dev-server --open",
     "prebuild": "npm run clean -s",
     "build": "NODE_ENV=production webpack --config webpack.config.babel.js",
-    "build:webassembly": "rm -f src/cryptonight.js src/cryptonight.wasm && docker run --rm -v $(pwd):/src trzeci/emscripten emcc -Os  -s SINGLE_FILE=1 -s  NO_FILESYSTEM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap']\" --llvm-lto 1 -s TOTAL_MEMORY=67108864 -s WASM=1 -s BINARYEN=1 -s BINARYEN_TRAP_MODE=\"js\" -s BINARYEN_METHOD=\"native-wasm\" -s BINARYEN_ASYNC_COMPILATION=1 -s EXPORTED_FUNCTIONS=\"['_cryptonight']\" --post-js ./hash_cn/webassembly/module-post.js ./hash_cn/webassembly/blake.o  ./hash_cn/webassembly/cryptonight.o  ./hash_cn/webassembly/groestl.o  ./hash_cn/webassembly/jh_ansi_opt64.o  ./hash_cn/webassembly/keccak.o  ./hash_cn/webassembly/main.o  ./hash_cn/webassembly/oaes_lib.o  ./hash_cn/webassembly/skein.o -Wall -lm -o ./src/cryptonight.js"
+    "build:webassembly": "rm -f src/cryptonight.js src/cryptonight.wasm && docker run --rm -v $(pwd):/src trzeci/emscripten emcc -Os  -s SINGLE_FILE=1 -s  NO_FILESYSTEM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap']\" --llvm-lto 1 -s TOTAL_MEMORY=67108864 -s WASM=1 -s BINARYEN=1 -s BINARYEN_TRAP_MODE=\"js\" -s BINARYEN_METHOD=\"native-wasm\" -s BINARYEN_ASYNC_COMPILATION=1 -s EXPORTED_FUNCTIONS=\"['_cryptonight']\" --post-js ./hash_cn/webassembly/module-post.js ./hash_cn/webassembly/blake.o  ./hash_cn/webassembly/cryptonight.o  ./hash_cn/webassembly/groestl.o  ./hash_cn/webassembly/jh_ansi_opt64.o  ./hash_cn/webassembly/keccak.o  ./hash_cn/webassembly/main.o  ./hash_cn/webassembly/oaes_lib.o  ./hash_cn/webassembly/skein.o -Wall -lm -o ./src/cryptonight.js",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "precommit": "lint-staged"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js}": [
+      "eslint",
+      "git add"
+    ],
+    "*.{js,json,md}": [
+      "prettier --list-different --write",
+      "git add"
+    ]
   }
 }

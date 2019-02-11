@@ -1,9 +1,58 @@
-import path from 'path';
-import merge from 'webpack-merge';
-import nodeExternals from 'webpack-node-externals';
+import path from 'path'
+import webpack from 'webpack'
+import merge from 'webpack-merge'
 
-import pkg from './package.json';
-var env = process.env.NODE_ENV || 'development';
+import nodeExternals from 'webpack-node-externals'
+import CleanWebpackPlugin from 'clean-webpack-plugin'
+import TerserPlugin from 'terser-webpack-plugin'
+
+import pkg from './package.json'
+
+const now = new Date()
+
+const NODE_ENV = process.env.NODE_ENV || 'development'
+const IS_PRODUCTION = NODE_ENV === 'production'
+
+const banner = `${pkg.description} v${pkg.version}
+
+@author ${pkg.author.name} <${pkg.author.email}>
+@website ${pkg.homepage}
+
+@copyright Ebakus ${now.getFullYear()}
+@license ${pkg.license}`
+
+const optimization = {}
+if (IS_PRODUCTION) {
+  optimization.minimizer = [
+    new TerserPlugin({
+      cache: true,
+      parallel: true,
+      sourceMap: !IS_PRODUCTION, // set to true if you want JS source maps
+      terserOptions: {
+        compress: {
+          global_defs: {
+            // false, means that it will be removed from Production build
+            __DEV__: false,
+            __DISABLED_FEATURE__: false,
+          },
+          warnings: false,
+          sequences: true,
+          conditionals: true,
+          booleans: true,
+          unused: true,
+          if_return: true,
+          join_vars: true,
+          dead_code: true,
+          drop_debugger: true,
+          drop_console: true,
+          passes: 2,
+          pure_funcs: ['console', 'window.console'],
+        },
+        mangle: true,
+      },
+    }),
+  ]
+}
 
 /*
  * Common configuration chunk to be used for both
@@ -11,7 +60,7 @@ var env = process.env.NODE_ENV || 'development';
  */
 
 const baseConfig = {
-  mode: env,
+  mode: NODE_ENV,
   entry: {
     ebakus: './src/index.js',
   },
@@ -33,10 +82,15 @@ const baseConfig = {
   stats: {
     colors: true,
   },
-  devtool: env == 'development' ? 'source-map' : '',
+  devtool: IS_PRODUCTION ? '' : 'source-map',
   devServer: {
     contentBase: './lib',
   },
+  plugins: [
+    new CleanWebpackPlugin(['lib']),
+    new webpack.BannerPlugin({ banner }),
+  ],
+  optimization,
   module: {
     rules: [
       {
@@ -45,7 +99,7 @@ const baseConfig = {
       },
     ],
   },
-};
+}
 
 const clientConfig = {
   target: 'web',
@@ -55,11 +109,10 @@ const clientConfig = {
   output: {
     filename: '[name].browser.js',
   },
-
   devServer: {
     contentBase: ['./example', './lib'],
   },
-};
+}
 
 const serverConfig = {
   target: 'node',
@@ -68,9 +121,9 @@ const serverConfig = {
       whitelist: ['web3', 'eth-lib'],
     }),
   ],
-};
+}
 
 module.exports = [
   merge(baseConfig, clientConfig),
   merge(baseConfig, serverConfig),
-];
+]
