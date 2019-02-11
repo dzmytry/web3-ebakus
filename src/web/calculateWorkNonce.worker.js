@@ -56,7 +56,7 @@ onmessage = function(e) {
     const heap = Module.HEAPU8.buffer;
     const input = new Uint8Array(heap, Module._malloc(64), 64);
 
-    const rlpIntArray = hex2uint8(heap, hash);
+    const rlpIntArray = hex2uint8(heap, hash, Module._malloc);
     const rlpHash = new Uint8Array(heap, Module._malloc(32), 32);
     getCryptoNightBigEndian(rlpIntArray, rlpHash);
 

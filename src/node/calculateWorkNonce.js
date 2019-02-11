@@ -1,5 +1,5 @@
 import clz from 'clz-buffer';
-import Module from '../common/cryptonight.js';
+import Module from '../common/cryptonight';
 import { hex2uint8 } from '../common/utils';
 
 export default new Promise(function(resolve, reject) {
@@ -28,7 +28,7 @@ export default new Promise(function(resolve, reject) {
       const heap = Module.HEAPU8.buffer;
       const input = new Uint8Array(heap, api.Malloc(64), 64);
 
-      const rlpIntArray = hex2uint8(heap, hash);
+      const rlpIntArray = hex2uint8(heap, hash, api.Malloc);
       const rlpHash = new Uint8Array(heap, api.Malloc(32), 32);
       getCryptoNightBigEndian(rlpIntArray, rlpHash);
 

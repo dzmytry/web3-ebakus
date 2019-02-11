@@ -18,6 +18,13 @@ const baseConfig = {
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'lib'),
+    libraryTarget: 'umd',
+    libraryExport: 'default',
+    library: {
+      root: 'Web3Ebakus',
+      amd: pkg.name,
+      commonjs: pkg.name,
+    },
   },
   resolve: {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
@@ -30,6 +37,14 @@ const baseConfig = {
   devServer: {
     contentBase: './lib',
   },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+      },
+    ],
+  },
 };
 
 const clientConfig = {
@@ -39,22 +54,8 @@ const clientConfig = {
   },
   output: {
     filename: '[name].browser.js',
-    libraryTarget: 'umd',
-    libraryExport: 'default',
-    library: {
-      root: 'Web3Ebakus',
-      amd: pkg.name,
-      commonjs: pkg.name,
-    },
   },
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        loader: 'babel-loader',
-      },
-    ],
-  },
+
   devServer: {
     contentBase: ['./example', './lib'],
   },

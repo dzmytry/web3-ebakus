@@ -7,8 +7,8 @@
 
 import RLP from 'eth-lib/lib/rlp';
 import Bytes from 'eth-lib/lib/bytes';
-import calculateWorkNonce from './node/calculateWorkNonce.js';
 
+import calculateWorkNonce from './node/calculateWorkNonce.js';
 import signTransaction from './common/signTransaction';
 import { wasmSupported } from './common/utils';
 
