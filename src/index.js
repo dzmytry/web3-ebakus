@@ -7,23 +7,10 @@
 
 import RLP from 'eth-lib/lib/rlp';
 import Bytes from 'eth-lib/lib/bytes';
-import calculateWorkNonce from './calculateWorkNonce.node.js';
+import calculateWorkNonce from './node/calculateWorkNonce.js';
 
-const wasmSupported = (() => {
-  try {
-    if (
-      typeof WebAssembly === 'object' &&
-      typeof WebAssembly.instantiate === 'function'
-    ) {
-      const module = new WebAssembly.Module(
-        Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00)
-      );
-      if (module instanceof WebAssembly.Module)
-        return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
-    }
-  } catch (e) {}
-  return false;
-})();
+import signTransaction from './common/signTransaction';
+import { wasmSupported } from './common/utils';
 
 const ebakus = web3 => {
   /*
@@ -41,7 +28,9 @@ const ebakus = web3 => {
     callback = callback || function() {};
 
     if (!wasmSupported) {
-      error = new Error('Wasm is not supported by browser. CryptoNight can\'t load.');
+      error = new Error(
+        "Wasm is not supported by browser. CryptoNight can't load."
+      );
 
       callback(error);
       return Promise.reject(error);
@@ -113,6 +102,9 @@ const ebakus = web3 => {
 
     account = superAddAccountFunctions.call(_this, account);
 
+    account.signTransaction = (tx, callback) => {
+      return signTransaction(tx, account.privateKey, callback);
+    };
     account.calculateWorkForTransaction = web3.eth.calculateWorkForTransaction;
 
     return account;

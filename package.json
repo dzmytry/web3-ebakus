@@ -15,7 +15,6 @@
   ],
   "private": true,
   "dependencies": {
-    "any-promise": "1.3.0",
     "clz-buffer": "^1.0.0",
     "eth-lib": "0.2.7"
   },
@@ -38,7 +37,6 @@
     "start": "webpack-dev-server --open",
     "prebuild": "npm run clean -s",
     "build": "NODE_ENV=production webpack --config webpack.config.babel.js",
-    "build:webassembly": "rm -f src/cryptonight.js src/cryptonight.wasm && docker run --rm -v $(pwd):/src trzeci/emscripten emcc -Os  -s SINGLE_FILE=1 -s  NO_FILESYSTEM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap']\" --llvm-lto 1 -s TOTAL_MEMORY=67108864 -s WASM=1 -s BINARYEN=1 -s BINARYEN_TRAP_MODE=\"js\" -s BINARYEN_METHOD=\"native-wasm\" -s BINARYEN_ASYNC_COMPILATION=1 -s EXPORTED_FUNCTIONS=\"['_cryptonight']\" --post-js ./hash_cn/webassembly/module-post.js ./hash_cn/webassembly/blake.o  ./hash_cn/webassembly/cryptonight.o  ./hash_cn/webassembly/groestl.o  ./hash_cn/webassembly/jh_ansi_opt64.o  ./hash_cn/webassembly/keccak.o  ./hash_cn/webassembly/main.o  ./hash_cn/webassembly/oaes_lib.o  ./hash_cn/webassembly/skein.o -Wall -lm -o ./src/cryptonight.js",
-    "prepublish": "npm run build"
+    "build:webassembly": "rm -f src/cryptonight.js src/cryptonight.wasm && docker run --rm -v $(pwd):/src trzeci/emscripten emcc -Os  -s SINGLE_FILE=1 -s  NO_FILESYSTEM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap']\" --llvm-lto 1 -s TOTAL_MEMORY=67108864 -s WASM=1 -s BINARYEN=1 -s BINARYEN_TRAP_MODE=\"js\" -s BINARYEN_METHOD=\"native-wasm\" -s BINARYEN_ASYNC_COMPILATION=1 -s EXPORTED_FUNCTIONS=\"['_cryptonight']\" --post-js ./hash_cn/webassembly/module-post.js ./hash_cn/webassembly/blake.o  ./hash_cn/webassembly/cryptonight.o  ./hash_cn/webassembly/groestl.o  ./hash_cn/webassembly/jh_ansi_opt64.o  ./hash_cn/webassembly/keccak.o  ./hash_cn/webassembly/main.o  ./hash_cn/webassembly/oaes_lib.o  ./hash_cn/webassembly/skein.o -Wall -lm -o ./src/cryptonight.js"
   }
 }

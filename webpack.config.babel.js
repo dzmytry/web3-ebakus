@@ -18,24 +18,7 @@ const baseConfig = {
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'lib'),
-    libraryTarget: 'umd',
-    libraryExport: 'default',
-    library: {
-      root: 'Web3Ebakus',
-      amd: pkg.name,
-      commonjs: pkg.name,
-    },
   },
-  externals: [
-    nodeExternals({
-      whitelist: [
-        'web3',
-        'any-promise',
-        'eth-lib/lib/rlp',
-        'eth-lib/lib/bytes',
-      ],
-    }),
-  ],
   resolve: {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
     extensions: ['.json', '.js'],
@@ -56,6 +39,13 @@ const clientConfig = {
   },
   output: {
     filename: '[name].browser.js',
+    libraryTarget: 'umd',
+    libraryExport: 'default',
+    library: {
+      root: 'Web3Ebakus',
+      amd: pkg.name,
+      commonjs: pkg.name,
+    },
   },
   module: {
     rules: [
@@ -65,10 +55,18 @@ const clientConfig = {
       },
     ],
   },
+  devServer: {
+    contentBase: ['./example', './lib'],
+  },
 };
 
 const serverConfig = {
   target: 'node',
+  externals: [
+    nodeExternals({
+      whitelist: ['web3', 'eth-lib'],
+    }),
+  ],
 };
 
 module.exports = [
