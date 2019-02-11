@@ -152,6 +152,17 @@ const ebakus = web3 => {
     return Promise.resolve(calculatePowNonce(tx));
   };
 
+  // extend web3 eth methods
+  web3.eth.extend({
+    methods: [
+      {
+        name: 'suggestDifficulty',
+        call: 'eth_suggestDifficulty',
+        outputFormatter: web3.utils.toDecimal,
+      },
+    ],
+  });
+
   // keep ref to web3 original method
   const superAddAccountFunctions = web3.eth.accounts._addAccountFunctions;
 
