@@ -67,6 +67,7 @@ The `ctrlWorkForTransactionState` and `callback` parameters are optional.
   * `kill()`: kills the worker
 
   Example:
+
   ```js
   let ctrl = {};
 
