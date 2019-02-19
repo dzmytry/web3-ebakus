@@ -26,16 +26,6 @@ const baseConfig = {
       commonjs: pkg.name,
     },
   },
-  externals: [
-    nodeExternals({
-      whitelist: [
-        'web3',
-        'any-promise',
-        'eth-lib/lib/rlp',
-        'eth-lib/lib/bytes',
-      ],
-    }),
-  ],
   resolve: {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
     extensions: ['.json', '.js'],
@@ -47,16 +37,6 @@ const baseConfig = {
   devServer: {
     contentBase: './lib',
   },
-};
-
-const clientConfig = {
-  target: 'web',
-  node: {
-    fs: 'empty',
-  },
-  output: {
-    filename: '[name].browser.js',
-  },
   module: {
     rules: [
       {
@@ -67,8 +47,27 @@ const clientConfig = {
   },
 };
 
+const clientConfig = {
+  target: 'web',
+  node: {
+    fs: 'empty',
+  },
+  output: {
+    filename: '[name].browser.js',
+  },
+
+  devServer: {
+    contentBase: ['./example', './lib'],
+  },
+};
+
 const serverConfig = {
   target: 'node',
+  externals: [
+    nodeExternals({
+      whitelist: ['web3', 'eth-lib'],
+    }),
+  ],
 };
 
 module.exports = [

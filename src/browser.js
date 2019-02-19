@@ -5,27 +5,13 @@
  * @date 2018
  */
 
-import Promise from 'any-promise';
-import RLP from 'eth-lib/lib/rlp';
 import Bytes from 'eth-lib/lib/bytes';
+import RLP from 'eth-lib/lib/rlp';
 
-import Worker from 'worker-loader?inline&name=[name].[ext]!./web.worker.js';
+import Worker from 'worker-loader?inline&name=[name].[ext]!./web/calculateWorkNonce.worker.js';
 
-const wasmSupported = (() => {
-  try {
-    if (
-      typeof WebAssembly === 'object' &&
-      typeof WebAssembly.instantiate === 'function'
-    ) {
-      const module = new WebAssembly.Module(
-        Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00)
-      );
-      if (module instanceof WebAssembly.Module)
-        return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
-    }
-  } catch (e) {}
-  return false;
-})();
+import signTransaction from './common/signTransaction';
+import { wasmSupported } from './common/utils';
 
 const ebakus = web3 => {
   /*
@@ -166,15 +152,29 @@ const ebakus = web3 => {
     return Promise.resolve(calculatePowNonce(tx));
   };
 
-  // keep ref to web3 original function
+  // extend web3 eth methods
+  web3.eth.extend({
+    methods: [
+      {
+        name: 'suggestDifficulty',
+        call: 'eth_suggestDifficulty',
+        outputFormatter: web3.utils.toDecimal,
+      },
+    ],
+  });
+
+  // keep ref to web3 original method
   const superAddAccountFunctions = web3.eth.accounts._addAccountFunctions;
 
-  // extend web3 accounts functions
+  // extend web3 accounts methods
   web3.eth.accounts._addAccountFunctions = function(account) {
     const _this = this;
 
     account = superAddAccountFunctions.call(_this, account);
 
+    account.signTransaction = (tx, callback) => {
+      return signTransaction(tx, account.privateKey, callback);
+    };
     account.calculateWorkForTransaction = web3.eth.calculateWorkForTransaction;
 
     return account;
