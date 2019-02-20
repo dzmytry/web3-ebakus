@@ -1,24 +1,24 @@
-import Account from 'eth-lib/lib/account';
-import Bytes from 'eth-lib/lib/bytes';
-import Hash from 'eth-lib/lib/hash';
-import Nat from 'eth-lib/lib/nat';
-import RLP from 'eth-lib/lib/rlp';
+import Account from 'eth-lib/lib/account'
+import Bytes from 'eth-lib/lib/bytes'
+import Hash from 'eth-lib/lib/hash'
+import Nat from 'eth-lib/lib/nat'
+import RLP from 'eth-lib/lib/rlp'
 
-const isNot = value => typeof value === 'undefined' || value === null;
+const isNot = value => typeof value === 'undefined' || value === null
 
 const trimLeadingZero = hex => {
   while (hex && hex.startsWith('0x0')) {
-    hex = `0x${hex.slice(3)}`;
+    hex = `0x${hex.slice(3)}`
   }
-  return hex;
-};
+  return hex
+}
 
 const makeEven = hex => {
   if (hex.length % 2 === 1) {
-    hex = hex.replace('0x', '0x0');
+    hex = hex.replace('0x', '0x0')
   }
-  return hex;
-};
+  return hex
+}
 
 /**
  * Signs a transaction object with the given privateKey
@@ -33,41 +33,41 @@ const makeEven = hex => {
  * @returns {Promise<Object>}
  */
 const signTransaction = (tx, privateKey, callback) => {
-  const _this = this;
-  let error = false;
-  let result;
+  const _this = this
+  let error = false
+  let result
 
-  callback = callback || (() => {});
+  callback = callback || (() => {})
 
   if (!tx) {
-    error = new Error('No transaction object given!');
+    error = new Error('No transaction object given!')
 
-    callback(error);
-    return Promise.reject(error);
+    callback(error)
+    return Promise.reject(error)
   }
 
   function signed(tx) {
     if (!tx.gas && !tx.gasLimit) {
-      error = new Error('gas is missing');
+      error = new Error('gas is missing')
     }
 
     if (tx.nonce < 0 || tx.gas < 0 || tx.workNonce < 0 || tx.chainId < 0) {
-      error = new Error('Gas, gasPrice, nonce or chainId is lower than 0');
+      error = new Error('Gas, gasPrice, nonce or chainId is lower than 0')
     }
 
     if (error) {
-      callback(error);
-      return Promise.reject(error);
+      callback(error)
+      return Promise.reject(error)
     }
 
     try {
-      tx = web3.extend.formatters.inputCallFormatter(tx);
+      tx = web3.extend.formatters.inputCallFormatter(tx)
 
-      const transaction = tx;
-      transaction.to = tx.to || '0x';
-      transaction.data = tx.data || '0x';
-      transaction.value = tx.value || '0x';
-      transaction.chainId = web3.utils.numberToHex(tx.chainId);
+      const transaction = tx
+      transaction.to = tx.to || '0x'
+      transaction.data = tx.data || '0x'
+      transaction.value = tx.value || '0x'
+      transaction.chainId = web3.utils.numberToHex(tx.chainId)
 
       const rlpEncoded = RLP.encode([
         Bytes.fromNat(transaction.nonce),
@@ -79,45 +79,45 @@ const signTransaction = (tx, privateKey, callback) => {
         Bytes.fromNat(transaction.chainId || '0x1'),
         '0x',
         '0x',
-      ]);
+      ])
 
-      const hash = Hash.keccak256(rlpEncoded);
+      const hash = Hash.keccak256(rlpEncoded)
 
       const signature = Account.makeSigner(
         Nat.toNumber(transaction.chainId || '0x1') * 2 + 35
-      )(Hash.keccak256(rlpEncoded), privateKey);
+      )(Hash.keccak256(rlpEncoded), privateKey)
 
       const rawTx = RLP.decode(rlpEncoded)
         .slice(0, 6)
-        .concat(Account.decodeSignature(signature));
+        .concat(Account.decodeSignature(signature))
 
-      rawTx[6] = makeEven(trimLeadingZero(rawTx[6]));
-      rawTx[7] = makeEven(trimLeadingZero(rawTx[7]));
-      rawTx[8] = makeEven(trimLeadingZero(rawTx[8]));
+      rawTx[6] = makeEven(trimLeadingZero(rawTx[6]))
+      rawTx[7] = makeEven(trimLeadingZero(rawTx[7]))
+      rawTx[8] = makeEven(trimLeadingZero(rawTx[8]))
 
-      const rawTransaction = RLP.encode(rawTx);
+      const rawTransaction = RLP.encode(rawTx)
 
-      const values = RLP.decode(rawTransaction);
+      const values = RLP.decode(rawTransaction)
       result = {
         messageHash: hash,
         v: trimLeadingZero(values[6]),
         r: trimLeadingZero(values[7]),
         s: trimLeadingZero(values[8]),
         rawTransaction,
-      };
+      }
     } catch (error) {
-      callback(error);
-      return Promise.reject(error);
+      callback(error)
+      return Promise.reject(error)
     }
 
-    callback(null, result);
+    callback(null, result)
 
-    return result;
+    return result
   }
 
   // Resolve immediately if nonce, chainId and price are provided
   if (tx.nonce !== undefined && tx.chainId !== undefined) {
-    return Promise.resolve(signed(tx));
+    return Promise.resolve(signed(tx))
   }
 
   // Otherwise, get the missing info from the Ethereum Node
@@ -134,13 +134,13 @@ const signTransaction = (tx, privateKey, callback) => {
         `One of the values 'chainId', 'gasPrice', or 'nonce' couldn't be fetched: ${JSON.stringify(
           args
         )}`
-      );
+      )
     }
 
     return signed(
       extend(tx, { chainId: args[0], gasPrice: args[1], nonce: args[2] })
-    );
-  });
-};
+    )
+  })
+}
 
-export default signTransaction;
+export default signTransaction
