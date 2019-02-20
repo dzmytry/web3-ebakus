@@ -158,7 +158,7 @@ const ebakus = web3 => {
       {
         name: 'suggestDifficulty',
         call: 'eth_suggestDifficulty',
-        outputFormatter: web3.utils.toDecimal,
+        outputFormatter: web3.utils.toFloat,
       },
     ],
   })
