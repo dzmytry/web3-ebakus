@@ -62,7 +62,7 @@ if (IS_PRODUCTION) {
 const baseConfig = {
   mode: NODE_ENV,
   entry: {
-    ebakus: './src/index.js',
+    'web3-ebakus': './src/index.js',
   },
   output: {
     filename: '[name].js',

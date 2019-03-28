@@ -12,7 +12,7 @@
   "browser": {
     "./src/index.js": "./src/browser.js"
   },
-  "main": "lib/ebakus.js",
+  "main": "lib/web3-ebakus.js",
   "module": "src/index.js",
   "source": "src/index.js",
   "files": [
