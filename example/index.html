@@ -76,7 +76,7 @@
         };
 
         function suggestDifficulty() {
-            web3.eth.suggestDifficulty()
+            web3.eth.suggestDifficulty(test.address)
                 .then(difficulty => {
                     console.log('difficulty: ', difficulty);
                 })

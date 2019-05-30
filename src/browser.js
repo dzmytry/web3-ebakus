@@ -158,6 +158,8 @@ const ebakus = web3 => {
       {
         name: 'suggestDifficulty',
         call: 'eth_suggestDifficulty',
+        params: 1,
+        inputFormatter: [web3.utils.toChecksumAddress],
         outputFormatter: web3.utils.toFloat,
       },
     ],

@@ -35,12 +35,12 @@ You can also have a look at the [example page](example/index.html).
 
 ## Methods
 
-### web3.eth.suggestDifficulty()
+### web3.eth.suggestDifficulty(accountAddress)
 
 The `suggestDifficulty` retrieves the currently suggested difficulty of the network which can be used for `calculateWorkForTransaction`.
 
 ```js
-web3.eth.suggestDifficulty().then(difficulty => console.log)
+web3.eth.suggestDifficulty(accountAddress).then(difficulty => console.log)
 ```
 
 ### web3.eth.calculateWorkForTransaction(transaction, targetDifficulty, ctrlWorkForTransactionState, callback)
