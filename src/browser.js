@@ -10,7 +10,9 @@ import RLP from 'eth-lib/lib/rlp'
 
 import Worker from 'worker-loader?inline&name=[name].[ext]!./web/calculateWorkNonce.worker.js'
 
-import signTransaction from './common/signTransaction'
+import signTransaction, {
+  setWeb3Provider as signTransactionSetWeb3Provider,
+} from './common/signTransaction'
 import { wasmSupported } from './common/utils'
 
 const ebakus = web3 => {
@@ -181,6 +183,8 @@ const ebakus = web3 => {
 
     return account
   }
+
+  signTransactionSetWeb3Provider(web3)
 
   return web3
 }

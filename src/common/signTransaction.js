@@ -4,6 +4,8 @@ import Hash from 'eth-lib/lib/hash'
 import Nat from 'eth-lib/lib/nat'
 import RLP from 'eth-lib/lib/rlp'
 
+let web3
+
 const isNot = value => typeof value === 'undefined' || value === null
 
 const trimLeadingZero = hex => {
@@ -18,6 +20,10 @@ const makeEven = hex => {
     hex = hex.replace('0x', '0x0')
   }
   return hex
+}
+
+const setWeb3Provider = provider => {
+  web3 = provider
 }
 
 /**
@@ -144,3 +150,4 @@ const signTransaction = (tx, privateKey, callback) => {
 }
 
 export default signTransaction
+export { setWeb3Provider }
