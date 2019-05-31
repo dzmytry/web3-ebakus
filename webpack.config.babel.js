@@ -21,37 +21,41 @@ const banner = `${pkg.description} v${pkg.version}
 @copyright Ebakus ${now.getFullYear()}
 @license ${pkg.license}`
 
-const optimization = {}
-if (IS_PRODUCTION) {
-  optimization.minimizer = [
-    new TerserPlugin({
-      cache: true,
-      parallel: true,
-      sourceMap: !IS_PRODUCTION, // set to true if you want JS source maps
-      terserOptions: {
-        compress: {
-          global_defs: {
-            // false, means that it will be removed from Production build
-            __DEV__: false,
-            __DISABLED_FEATURE__: false,
+const getOptimization = target => {
+  if (!IS_PRODUCTION) {
+    return {}
+  }
+  return {
+    minimizer: [
+      new TerserPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: !IS_PRODUCTION, // set to true if you want JS source maps
+        terserOptions: {
+          compress: {
+            global_defs: {
+              // false, means that it will be removed from Production build
+              __DEV__: false,
+              __DISABLED_FEATURE__: false,
+            },
+            warnings: false,
+            sequences: true,
+            conditionals: true,
+            booleans: true,
+            unused: true,
+            if_return: true,
+            join_vars: true,
+            dead_code: true,
+            drop_debugger: true,
+            drop_console: target != 'node',
+            passes: 2,
+            pure_funcs: target != 'node' ? ['console', 'window.console'] : [],
           },
-          warnings: false,
-          sequences: true,
-          conditionals: true,
-          booleans: true,
-          unused: true,
-          if_return: true,
-          join_vars: true,
-          dead_code: true,
-          drop_debugger: true,
-          drop_console: true,
-          passes: 2,
-          pure_funcs: ['console', 'window.console'],
+          mangle: true,
         },
-        mangle: true,
-      },
-    }),
-  ]
+      }),
+    ],
+  }
 }
 
 /*
@@ -90,7 +94,6 @@ const baseConfig = {
     new CleanWebpackPlugin(['lib']),
     new webpack.BannerPlugin({ banner }),
   ],
-  optimization,
   module: {
     rules: [
       {
@@ -112,6 +115,7 @@ const clientConfig = {
   devServer: {
     contentBase: ['./example', './lib'],
   },
+  optimization: getOptimization('web'),
 }
 
 const serverConfig = {
@@ -121,6 +125,7 @@ const serverConfig = {
       whitelist: ['web3', 'eth-lib'],
     }),
   ],
+  optimization: getOptimization('node'),
 }
 
 module.exports = [
