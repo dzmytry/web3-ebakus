@@ -128,24 +128,22 @@ const signTransaction = (tx, privateKey, callback) => {
 
   // Otherwise, get the missing info from the Ethereum Node
   return Promise.all([
-    isNot(tx.chainId) ? web3.eth.net.getId.getId() : tx.chainId,
+    isNot(tx.chainId) ? web3.eth.net.getId() : tx.chainId,
     isNot(tx.nonce)
       ? web3.eth.getTransactionCount(
           web3.eth.accounts.privateKeyToAccount(privateKey).address
         )
       : tx.nonce,
   ]).then(args => {
-    if (isNot(args[0]) || isNot(args[1]) || isNot(args[2])) {
+    if (isNot(args[0]) || isNot(args[1])) {
       throw new Error(
-        `One of the values 'chainId', 'gasPrice', or 'nonce' couldn't be fetched: ${JSON.stringify(
+        `One of the values 'chainId', or 'nonce' couldn't be fetched: ${JSON.stringify(
           args
         )}`
       )
     }
 
-    return signed(
-      extend(tx, { chainId: args[0], gasPrice: args[1], nonce: args[2] })
-    )
+    return signed({ ...tx, chainId: args[0], nonce: args[1] })
   })
 }
 
