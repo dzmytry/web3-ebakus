@@ -1,7 +1,7 @@
 import clz from 'clz-buffer'
 import { parentPort } from 'worker_threads'
-import Module from '../common/cryptonight'
 import { hex2uint8 } from '../common/utils'
+import { sha3_256 } from 'js-sha3'
 
 let currentWorkNonce = 0
 
@@ -25,76 +25,54 @@ const mainThreadUpdate = throttled(500, () => {
   })
 })
 
-Module.ready.then(api => {
-  function getCryptoNightBigEndian(input, output) {
-    api.cryptonight(
-      output.byteOffset,
-      input.byteOffset,
-      input.byteLength,
-      /* lite */ 0,
-      /* variant */ 2
-    )
+function calculateWorkNonce(hash, targetDifficulty) {
+  let currentWorkNonce = 0
 
-    // reverse from little-endian to big-endian
-    output.reverse()
-  }
+  let bits = Math.log2(targetDifficulty)
+  bits = Math.ceil(bits)
+  const target = bits
 
-  // calculate a cryptonight hash
-  function calculateWorkNonce(hash, targetDifficulty) {
-    let currentWorkNonce = 0
+  var heap = new ArrayBuffer(128)
+  var input = new Uint8Array(heap, 64, 64)
+  const rlpIntArray = hex2uint8(heap, hash, 64)
+  const rlpHash = new Uint8Array(sha3_256.arrayBuffer(rlpIntArray))
+  input.set(rlpHash)
 
-    let bits = Math.log2(targetDifficulty)
-    bits = Math.ceil(bits)
-    const target = bits
+  const inputDataView = new DataView(heap, input.byteOffset, input.byteLength)
 
-    const heap = Module.HEAPU8.buffer
-    const input = new Uint8Array(heap, api.Malloc(64), 64)
+  let bestBit = 0
+  do {
+    // set in big-endian
+    inputDataView.setUint32(60, currentWorkNonce)
 
-    const rlpIntArray = hex2uint8(heap, hash, api.Malloc(hash.length / 2))
-    const rlpHash = new Uint8Array(heap, api.Malloc(32), 32)
-    getCryptoNightBigEndian(rlpIntArray, rlpHash)
+    const outputHash = new Uint8Array(sha3_256.arrayBuffer(input))
+    const firstBit = clz(outputHash)
 
-    input.set(rlpHash, 0)
+    if (firstBit > bestBit) {
+      bestBit = firstBit
 
-    const inputDataView = new DataView(heap, input.byteOffset, input.byteLength)
-
-    const outputMalloc = api.Malloc(32)
-    let bestBit = 0
-    do {
-      // set in big-endian
-      inputDataView.setUint32(60, currentWorkNonce)
-
-      const outputHash = new Uint8Array(heap, outputMalloc, 32)
-      getCryptoNightBigEndian(input, outputHash)
-
-      const firstBit = clz(outputHash)
-
-      if (firstBit > bestBit) {
-        bestBit = firstBit
-
-        if (bestBit >= target) {
-          break
-        }
+      if (bestBit >= target) {
+        break
       }
+    }
 
-      currentWorkNonce++
+    currentWorkNonce++
 
-      mainThreadUpdate()
-    } while (bestBit <= target)
-  }
+    mainThreadUpdate()
+  } while (bestBit <= target)
+}
 
+parentPort.on('message', data => {
+  const { hash, targetDifficulty } = data
+  calculateWorkNonce(hash, targetDifficulty)
+
+  // emit the final workNonce calculated for transaction
   parentPort.postMessage({
-    cmd: 'ready',
+    cmd: 'finished',
+    workNonce: currentWorkNonce,
   })
+})
 
-  parentPort.on('message', data => {
-    const { hash, targetDifficulty } = data
-    calculateWorkNonce(hash, targetDifficulty)
-
-    // emit the final workNonce calculated for transaction
-    parentPort.postMessage({
-      cmd: 'finished',
-      workNonce: currentWorkNonce,
-    })
-  })
+parentPort.postMessage({
+  cmd: 'ready',
 })
