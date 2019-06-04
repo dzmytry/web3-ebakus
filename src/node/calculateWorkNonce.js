@@ -50,7 +50,7 @@ Module.ready.then(api => {
     const heap = Module.HEAPU8.buffer
     const input = new Uint8Array(heap, api.Malloc(64), 64)
 
-    const rlpIntArray = hex2uint8(heap, hash, api.Malloc)
+    const rlpIntArray = hex2uint8(heap, hash, api.Malloc(hash.length / 2))
     const rlpHash = new Uint8Array(heap, api.Malloc(32), 32)
     getCryptoNightBigEndian(rlpIntArray, rlpHash)
 

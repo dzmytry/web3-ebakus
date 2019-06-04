@@ -21,7 +21,9 @@
   "private": true,
   "dependencies": {
     "clz-buffer": "^1.0.0",
-    "eth-lib": "0.2.8"
+    "eth-lib": "0.2.8",
+    "js-sha3": "^0.8.0",
+    "web3-utils": "^1.0.0-beta.55"
   },
   "devDependencies": {
     "@babel/core": "^7.2.0",
