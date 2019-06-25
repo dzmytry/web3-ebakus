@@ -90,6 +90,8 @@ const ebakus = web3 => {
           let isRunning = false
           const worker = new Worker()
 
+          const start = performance.now()
+
           /**
            * worker can emit the following payloads:
            * 1. { cmd: 'ready' }
@@ -105,17 +107,29 @@ const ebakus = web3 => {
             switch (cmd) {
               case 'ready': {
                 isRunning = true
+
+                console.time('job' + start)
                 worker.postMessage(job)
                 break
               }
 
               case 'current': {
                 currentWorkNonce = workNonce
+                // var t1 = performance.now()
+                // console.log(
+                //   'Call for ' +
+                //     workNonce +
+                //     ': ' +
+                //     (t1 - start) +
+                //     ' milliseconds.'
+                // )
+
                 break
               }
 
               case 'finished': {
                 tx.workNonce = web3.utils.numberToHex(workNonce)
+                console.timeEnd('job' + start)
 
                 isRunning = false
                 wrk.terminate()

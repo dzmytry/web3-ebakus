@@ -14,8 +14,8 @@ const wasmSupported = (() => {
   return false
 })()
 
-const hex2uint8 = (buffer, s, malloc) => {
-  let result = new Uint8Array(buffer, malloc(s.length / 2), s.length / 2)
+const hex2uint8 = (buffer, s, byteOffset) => {
+  let result = new Uint8Array(buffer, byteOffset, s.length / 2)
   for (let i = 0; i < s.length / 2; i++) {
     result[i] = parseInt(s.substr(2 * i, 2), 16)
   }

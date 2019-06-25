@@ -125,6 +125,11 @@ const serverConfig = {
       whitelist: ['web3', 'eth-lib'],
     }),
   ],
+  plugins: [
+    new webpack.ProvidePlugin({
+      Worker: ['worker_threads', 'Worker'],
+    }),
+  ],
   optimization: getOptimization('node'),
 }
 

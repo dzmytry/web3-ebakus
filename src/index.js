@@ -8,11 +8,11 @@
 import RLP from 'eth-lib/lib/rlp'
 import Bytes from 'eth-lib/lib/bytes'
 
-import calculateWorkNonce from './node/calculateWorkNonce.js'
 import signTransaction, {
   setWeb3Provider as signTransactionSetWeb3Provider,
 } from './common/signTransaction'
 import { wasmSupported } from './common/utils'
+import CalculateWorkNonceWorker from 'worker-loader?name=[name].[ext]&publicPath=./node_modules/web3-ebakus/lib/!./node/calculateWorkNonce.js'
 
 const ebakus = web3 => {
   /*
@@ -78,13 +78,81 @@ const ebakus = web3 => {
           '0x',
         ])
 
-        return calculateWorkNonce.then(calcFn => {
-          const workNonce = calcFn(rlpEncoded, targetDifficulty)
+        const job = {
+          hash: rlpEncoded,
+          targetDifficulty,
+        }
 
-          tx.workNonce = web3.utils.numberToHex(workNonce)
+        return new Promise(function(resolve, reject) {
+          let currentWorkNonce = 0
+          let isRunning = false
 
-          callback(null, tx)
-          return tx
+          const worker = new CalculateWorkNonceWorker()
+
+          /**
+           * worker can emit the following payloads:
+           * 1. { cmd: 'ready' }
+           * 2. { cmd: 'current', workNonce: number }
+           * 3. { cmd: 'finished', workNonce: number }
+           */
+          worker.on('message', data => {
+            const { cmd, workNonce } = data
+
+            switch (cmd) {
+              case 'ready': {
+                isRunning = true
+                worker.postMessage(job)
+                break
+              }
+
+              case 'current': {
+                currentWorkNonce = workNonce
+                break
+              }
+
+              case 'finished': {
+                tx.workNonce = web3.utils.numberToHex(workNonce)
+
+                isRunning = false
+                worker.terminate()
+
+                callback(null, tx)
+                resolve(tx)
+                break
+              }
+
+              default: {
+                console.warn('Unknown data from worker', data)
+              }
+            }
+          })
+
+          // allow the user to check status of the worker
+          if (typeof ctrl === 'object') {
+            ctrl.isRunning = () => isRunning
+            ctrl.getCurrentWorkNonce = () => currentWorkNonce
+            ctrl.kill = () => {
+              isRunning = false
+              currentWorkNonce = 0
+
+              worker.terminate()
+
+              reject('Worker terminated by user')
+            }
+          }
+
+          worker.on('error', e => {
+            throw e
+          })
+
+          worker.on('exit', exitCode => {
+            if (exitCode === 1) {
+              return null
+            }
+            const err = new Error(`Worker has stopped with code ${exitCode}`)
+            callback(err)
+            return Promise.reject(err)
+          })
         })
       } catch (e) {
         callback(e)
