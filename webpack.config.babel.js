@@ -66,7 +66,7 @@ const getOptimization = target => {
 const baseConfig = {
   mode: NODE_ENV,
   entry: {
-    'web3-ebakus': './src/index.js',
+    'web3-ebakus': ['@babel/polyfill', './src/index.js'],
   },
   output: {
     filename: '[name].js',

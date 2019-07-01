@@ -1,8 +1,5 @@
 import clz from 'clz-buffer'
-
-// import { keccak256 } from 'eth-lib/lib/hash'
-import { hex2uint8 } from '../common/utils'
-import { sha3_256 } from 'js-sha3'
+import { keccak256 } from 'eth-lib/lib/hash'
 
 const throttled = (delay, fn) => {
   let lastCall = 0
@@ -33,12 +30,10 @@ onmessage = function(e) {
     bits = Math.ceil(bits)
     const target = bits
 
-    hash = hash.slice(2)
+    const heap = new ArrayBuffer(hash.length * 2)
+    const input = new Uint8Array(heap, 64, 64)
 
-    var heap = new ArrayBuffer(128)
-    var input = new Uint8Array(heap, 64, 64)
-    const rlpIntArray = hex2uint8(heap, hash, 64)
-    const rlpHash = new Uint8Array(sha3_256.arrayBuffer(rlpIntArray))
+    const rlpHash = new Uint8Array(new Buffer(keccak256(hash).slice(2), 'hex'))
     input.set(rlpHash)
 
     const inputDataView = new DataView(heap, input.byteOffset, input.byteLength)
@@ -48,7 +43,9 @@ onmessage = function(e) {
       // set in big-endian
       inputDataView.setUint32(60, currentWorkNonce)
 
-      const outputHash = new Uint8Array(sha3_256.arrayBuffer(input))
+      const outputHash = new Uint8Array(
+        new Buffer(keccak256(input).slice(2), 'hex')
+      )
       const firstBit = clz(outputHash)
 
       if (firstBit > bestBit) {

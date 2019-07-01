@@ -22,6 +22,7 @@ const ebakus = web3 => {
   web3.eth.calculateWorkForTransaction = function calculateWorkForTransaction(
     tx,
     targetDifficulty,
+    ctrl,
     callback
   ) {
     const _this = this
@@ -45,37 +46,45 @@ const ebakus = web3 => {
       return Promise.reject(error)
     }
 
-    const handleTx = tx => {
-      if (!targetDifficulty) {
-        error = new Error('"targetDifficulty" is missing')
-      }
+    const handleTx = async tx => {
+      let currentWorkNonce = 0
+      let isRunning = false
+      let worker, workerReject
 
-      if (!tx.gas) {
-        error = new Error('"gas" is missing')
-      }
+      // allow the user to check status of the worker
+      if (ctrl !== null && typeof ctrl === 'object') {
+        ctrl.isRunning = () => isRunning
+        ctrl.getCurrentWorkNonce = () => currentWorkNonce
+        ctrl.kill = () => {
+          isRunning = false
+          currentWorkNonce = 0
 
-      if (tx.nonce < 0 || tx.gas < 0 || tx.chainId < 0) {
-        error = new Error('Gas, nonce or chainId is lower than 0')
-      }
-
-      if (error) {
-        callback(error)
-        return Promise.reject(error)
+          worker && worker.terminate()
+          workerReject && workerReject('Worker terminated by user')
+        }
       }
 
       try {
+        if (!targetDifficulty) {
+          targetDifficulty = await web3.eth.suggestDifficulty(tx.to)
+        }
+
+        if (!tx.nonce && tx.nonce !== 0) {
+          tx.nonce = await web3.eth.getTransactionCount(tx.to)
+        }
+
+        // if (!tx.gas) {
+        //   tx.gas = await  web3.eth.estimateGas(tx)
+        // }
+
         tx = web3.extend.formatters.inputCallFormatter(tx)
 
         const rlpEncoded = RLP.encode([
           Bytes.fromNat(tx.nonce),
-          Bytes.fromNat(/* workNonce */ '0x'),
           Bytes.fromNat(tx.gas),
           tx.to ? tx.to.toLowerCase() : '',
           Bytes.fromNat(tx.value || '0x'),
           tx.data || '0x',
-          Bytes.fromNat(web3.utils.numberToHex(tx.chainId) || '0x1'),
-          '0x',
-          '0x',
         ])
 
         const job = {
@@ -84,10 +93,8 @@ const ebakus = web3 => {
         }
 
         return new Promise(function(resolve, reject) {
-          let currentWorkNonce = 0
-          let isRunning = false
-
-          const worker = new CalculateWorkNonceWorker()
+          worker = new CalculateWorkNonceWorker()
+          workerReject = reject
 
           /**
            * worker can emit the following payloads:
@@ -112,6 +119,7 @@ const ebakus = web3 => {
 
               case 'finished': {
                 tx.workNonce = web3.utils.numberToHex(workNonce)
+                currentWorkNonce = tx.workNonce
 
                 isRunning = false
                 worker.terminate()
@@ -126,20 +134,6 @@ const ebakus = web3 => {
               }
             }
           })
-
-          // allow the user to check status of the worker
-          if (typeof ctrl === 'object') {
-            ctrl.isRunning = () => isRunning
-            ctrl.getCurrentWorkNonce = () => currentWorkNonce
-            ctrl.kill = () => {
-              isRunning = false
-              currentWorkNonce = 0
-
-              worker.terminate()
-
-              reject('Worker terminated by user')
-            }
-          }
 
           worker.on('error', e => {
             throw e

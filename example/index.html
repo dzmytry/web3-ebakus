@@ -38,25 +38,31 @@
                 console.log('isRunning', ctrl.isRunning());
                 console.log('getCurrentWorkNonce', ctrl.getCurrentWorkNonce());
 
-                if (!ctrl.isRunning() && ctrl.getCurrentWorkNonce() > 0) {
+                if (!ctrl.isRunning()) {
                     clearInterval(logger);
                 }
             }, 500);
 
+            var killer
             if (kill) {
-                setTimeout(() => {
+                killer = setTimeout(() => {
                     clearInterval(logger);
                     ctrl.kill();
+                    console.info('Worker killed by user.')
                 }, 3000);
             }
 
             web3.eth.calculateWorkForTransaction(test.transaction, 64, ctrl, null)
                 .then(txWithPow => {
+                    if (killer) {
+                      clearTimeout(killer)
+                    }
+
                     console.log('txWithPow: ', txWithPow);
                     console.log('workNonce: ', txWithPow.workNonce);
 
-                    if (txWithPow.workNonce != '0xb5') {
-                        throw `Oops, wanted: '0xb5', received: '${txWithPow.workNonce}'`;
+                    if (txWithPow.workNonce != '0x8') {
+                        throw `Oops, wanted: '0x8', received: '${txWithPow.workNonce}'`;
                     }
                 })
                 .catch(err => console.error(err));

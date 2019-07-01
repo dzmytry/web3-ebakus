@@ -1,9 +1,6 @@
 import clz from 'clz-buffer'
+import { keccak256 } from 'eth-lib/lib/hash'
 import { parentPort } from 'worker_threads'
-import { hex2uint8 } from '../common/utils'
-import { sha3_256 } from 'js-sha3'
-
-let currentWorkNonce = 0
 
 const throttled = (delay, fn) => {
   let lastCall = 0
@@ -17,8 +14,8 @@ const throttled = (delay, fn) => {
   }
 }
 
-const mainThreadUpdate = throttled(500, () => {
-  // emit the final workNonce calculated for transaction
+const mainThreadUpdate = throttled(500, currentWorkNonce => {
+  // emit the current workNonce calculated for transaction
   parentPort.postMessage({
     cmd: 'current',
     workNonce: currentWorkNonce,
@@ -32,10 +29,10 @@ function calculateWorkNonce(hash, targetDifficulty) {
   bits = Math.ceil(bits)
   const target = bits
 
-  var heap = new ArrayBuffer(128)
-  var input = new Uint8Array(heap, 64, 64)
-  const rlpIntArray = hex2uint8(heap, hash, 64)
-  const rlpHash = new Uint8Array(sha3_256.arrayBuffer(rlpIntArray))
+  const heap = new ArrayBuffer(hash.length * 2)
+  const input = new Uint8Array(heap, 64, 64)
+
+  const rlpHash = new Uint8Array(new Buffer(keccak256(hash).slice(2), 'hex'))
   input.set(rlpHash)
 
   const inputDataView = new DataView(heap, input.byteOffset, input.byteLength)
@@ -45,32 +42,34 @@ function calculateWorkNonce(hash, targetDifficulty) {
     // set in big-endian
     inputDataView.setUint32(60, currentWorkNonce)
 
-    const outputHash = new Uint8Array(sha3_256.arrayBuffer(input))
+    const outputHash = new Uint8Array(
+      new Buffer(keccak256(input).slice(2), 'hex')
+    )
     const firstBit = clz(outputHash)
 
     if (firstBit > bestBit) {
       bestBit = firstBit
 
       if (bestBit >= target) {
+        // emit the final workNonce calculated for transaction
+        parentPort.postMessage({
+          cmd: 'finished',
+          workNonce: currentWorkNonce,
+        })
+
         break
       }
     }
 
     currentWorkNonce++
 
-    mainThreadUpdate()
+    mainThreadUpdate(currentWorkNonce)
   } while (bestBit <= target)
 }
 
 parentPort.on('message', data => {
   const { hash, targetDifficulty } = data
   calculateWorkNonce(hash, targetDifficulty)
-
-  // emit the final workNonce calculated for transaction
-  parentPort.postMessage({
-    cmd: 'finished',
-    workNonce: currentWorkNonce,
-  })
 })
 
 parentPort.postMessage({
