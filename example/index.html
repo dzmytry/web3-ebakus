@@ -55,8 +55,8 @@
                     console.log('txWithPow: ', txWithPow);
                     console.log('workNonce: ', txWithPow.workNonce);
 
-                    if (txWithPow.workNonce != '0xb5') {
-                        throw `Oops, wanted: '0xb5', received: '${txWithPow.workNonce}'`;
+                    if (txWithPow.workNonce != '0x8') {
+                        throw `Oops, wanted: '0x8', received: '${txWithPow.workNonce}'`;
                     }
                 })
                 .catch(err => console.error(err));
