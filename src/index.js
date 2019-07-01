@@ -69,30 +69,22 @@ const ebakus = web3 => {
           targetDifficulty = await web3.eth.suggestDifficulty(tx.to)
         }
 
-        if (!tx.chainId) {
-          tx.chainId = await web3.eth.net.getId()
-        }
-
         if (!tx.nonce && tx.nonce !== 0) {
           tx.nonce = await web3.eth.getTransactionCount(tx.to)
         }
 
         // if (!tx.gas) {
-        //   tx.gas = await this.estimateGas(tx)
+        //   tx.gas = await  web3.eth.estimateGas(tx)
         // }
 
         tx = web3.extend.formatters.inputCallFormatter(tx)
 
         const rlpEncoded = RLP.encode([
           Bytes.fromNat(tx.nonce),
-          Bytes.fromNat(/* workNonce */ '0x'),
           Bytes.fromNat(tx.gas),
           tx.to ? tx.to.toLowerCase() : '',
           Bytes.fromNat(tx.value || '0x'),
           tx.data || '0x',
-          Bytes.fromNat(web3.utils.numberToHex(tx.chainId) || '0x1'),
-          '0x',
-          '0x',
         ])
 
         const job = {
