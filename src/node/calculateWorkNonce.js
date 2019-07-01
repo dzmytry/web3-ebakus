@@ -2,8 +2,6 @@ import clz from 'clz-buffer'
 import { keccak256 } from 'eth-lib/lib/hash'
 import { parentPort } from 'worker_threads'
 
-let currentWorkNonce = 0
-
 const throttled = (delay, fn) => {
   let lastCall = 0
   return function(...args) {
@@ -16,8 +14,8 @@ const throttled = (delay, fn) => {
   }
 }
 
-const mainThreadUpdate = throttled(500, () => {
-  // emit the final workNonce calculated for transaction
+const mainThreadUpdate = throttled(500, currentWorkNonce => {
+  // emit the current workNonce calculated for transaction
   parentPort.postMessage({
     cmd: 'current',
     workNonce: currentWorkNonce,
@@ -33,6 +31,7 @@ function calculateWorkNonce(hash, targetDifficulty) {
 
   const heap = new ArrayBuffer(hash.length * 2)
   const input = new Uint8Array(heap, 64, 64)
+
   const rlpHash = new Uint8Array(new Buffer(keccak256(hash).slice(2), 'hex'))
   input.set(rlpHash)
 
@@ -52,25 +51,25 @@ function calculateWorkNonce(hash, targetDifficulty) {
       bestBit = firstBit
 
       if (bestBit >= target) {
+        // emit the final workNonce calculated for transaction
+        parentPort.postMessage({
+          cmd: 'finished',
+          workNonce: currentWorkNonce,
+        })
+
         break
       }
     }
 
     currentWorkNonce++
 
-    mainThreadUpdate()
+    mainThreadUpdate(currentWorkNonce)
   } while (bestBit <= target)
 }
 
 parentPort.on('message', data => {
   const { hash, targetDifficulty } = data
   calculateWorkNonce(hash, targetDifficulty)
-
-  // emit the final workNonce calculated for transaction
-  parentPort.postMessage({
-    cmd: 'finished',
-    workNonce: currentWorkNonce,
-  })
 })
 
 parentPort.postMessage({

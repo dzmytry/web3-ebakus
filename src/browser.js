@@ -130,8 +130,8 @@ const ebakus = web3 => {
               }
 
               case 'finished': {
-                console.log('TCL: onMessage -> finished')
                 tx.workNonce = web3.utils.numberToHex(workNonce)
+                currentWorkNonce = tx.workNonce
 
                 isRunning = false
                 wrk.terminate()
