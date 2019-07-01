@@ -25,7 +25,7 @@ This will expose the `Web3Ebakus` object on the window object.
 ## Usage
 
 ```js
-import ebakus from 'web3-ebakus'
+import Web3Ebakus from 'web3-ebakus'
 import Web3 from 'web3'
 
 const web3 = Web3Ebakus(new Web3())
@@ -60,8 +60,6 @@ web3.eth.calculateWorkForTransaction(tx, /* targetDifficulty */ 1).then(tx => {
 
 The `ctrlWorkForTransactionState` and `callback` parameters are optional.
 
-> IMPORTANT: `ctrlWorkForTransactionState` is not supported in **node.js**, where the function signature accepts only 3 parameters instead of 4.
-
 - `ctrlWorkForTransactionState`: this is an object that will be populated with some useful methods when passed.
 
   - `isRunning()`: state of worker
@@ -79,7 +77,7 @@ The `ctrlWorkForTransactionState` and `callback` parameters are optional.
     console.log('getCurrentWorkNonce', ctrl.getCurrentWorkNonce())
 
     // stop logging once worker finished
-    if (!ctrl.isRunning() && ctrl.getCurrentWorkNonce() > 0) {
+    if (!ctrl.isRunning()) {
       clearInterval(logger)
     }
   }, 500)
