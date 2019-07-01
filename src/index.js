@@ -128,7 +128,7 @@ const ebakus = web3 => {
           })
 
           // allow the user to check status of the worker
-          if (typeof ctrl === 'object') {
+          if (ctrl !== null && typeof ctrl === 'object') {
             ctrl.isRunning = () => isRunning
             ctrl.getCurrentWorkNonce = () => currentWorkNonce
             ctrl.kill = () => {
