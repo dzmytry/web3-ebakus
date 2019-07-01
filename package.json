@@ -20,6 +20,7 @@
   ],
   "private": true,
   "dependencies": {
+    "@babel/polyfill": "^7.4.4",
     "clz-buffer": "^1.0.0",
     "eth-lib": "0.2.8"
   },
@@ -71,5 +72,6 @@
       "prettier --list-different --write",
       "git add"
     ]
-  }
+  },
+  "browserslist": "> 0.25%, not dead"
 }
