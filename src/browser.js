@@ -181,6 +181,43 @@ const ebakus = web3 => {
 
   signTransactionSetWeb3Provider(web3)
 
+  // add ebakus db methods to web3
+  web3.extend({
+    property: 'db',
+    methods: [
+      {
+        name: 'get',
+        call: 'db_get',
+        params: 5,
+        inputFormatter: [
+          web3.utils.inputAddressFormatter,
+          null,
+          null,
+          null,
+          web3.utils.inputBlockNumberFormatter,
+        ],
+      },
+      {
+        name: 'select',
+        call: 'db_select',
+        params: 5,
+        inputFormatter: [
+          web3.utils.inputAddressFormatter,
+          null,
+          null,
+          null,
+          web3.utils.inputBlockNumberFormatter,
+        ],
+      },
+      {
+        name: 'next',
+        call: 'db_next',
+        params: 1,
+        inputFormatter: [null],
+      },
+    ],
+  })
+
   return web3
 }
 
