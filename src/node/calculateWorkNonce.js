@@ -29,7 +29,7 @@ function calculateWorkNonce(hash, targetDifficulty) {
   bits = Math.ceil(bits)
   const target = bits
 
-  const heap = new ArrayBuffer(hash.length * 2)
+  const heap = new ArrayBuffer(128)
   const input = new Uint8Array(heap, 64, 64)
 
   const rlpHash = new Uint8Array(new Buffer(keccak256(hash).slice(2), 'hex'))
