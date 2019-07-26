@@ -9,9 +9,7 @@
     "email": "chris@ebakus.com"
   },
   "license": "MIT",
-  "browser": {
-    "./src/index.js": "./src/browser.js"
-  },
+  "browser": "lib/web3-ebakus.browser.js",
   "main": "lib/web3-ebakus.js",
   "module": "src/index.js",
   "source": "src/index.js",
