@@ -65,9 +65,6 @@ const getOptimization = target => {
 
 const baseConfig = {
   mode: NODE_ENV,
-  entry: {
-    'web3-ebakus': ['@babel/polyfill', './src/index.js'],
-  },
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'lib'),
@@ -83,6 +80,11 @@ const baseConfig = {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
     extensions: ['.json', '.js'],
   },
+  externals: [
+    nodeExternals({
+      whitelist: ['web3', 'eth-lib'],
+    }),
+  ],
   stats: {
     colors: true,
   },
@@ -109,6 +111,9 @@ const clientConfig = {
   node: {
     fs: 'empty',
   },
+  entry: {
+    'web3-ebakus': ['@babel/polyfill', './src/browser.js'],
+  },
   output: {
     filename: '[name].browser.js',
   },
@@ -120,11 +125,9 @@ const clientConfig = {
 
 const serverConfig = {
   target: 'node',
-  externals: [
-    nodeExternals({
-      whitelist: ['web3', 'eth-lib'],
-    }),
-  ],
+  entry: {
+    'web3-ebakus': ['@babel/polyfill', './src/index.js'],
+  },
   plugins: [
     new webpack.ProvidePlugin({
       Worker: ['worker_threads', 'Worker'],

@@ -20,8 +20,12 @@
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
     "clz-buffer": "^1.0.0",
+    "core-js": "2",
     "eth-lib": "0.2.8",
     "worker-loader": "^2.0.0"
+  },
+  "peerDependencies": {
+    "web3": "1.0.0-beta.37"
   },
   "devDependencies": {
     "@babel/core": "^7.2.0",
