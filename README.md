@@ -7,7 +7,6 @@ Extend Web3 functionality for [Ebakus](https://ebakus.com) blockchain.
 ### Node.js
 
 ```bash
-npm install --save web3 # web3 is needed as dependency
 npm install --save web3-ebakus
 ```
 
@@ -21,6 +20,10 @@ npm run-script build
 
 Then include `lib/web3-ebakus.browser.js` in your html file.
 This will expose the `Web3Ebakus` object on the window object.
+
+## Requirements
+
+- Web3 ^1.2.0
 
 ## Usage
 
