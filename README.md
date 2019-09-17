@@ -1,14 +1,14 @@
 # web3-ebakus
 
-Web3 functionality for [Ebakus](https://ebakus.com).
+Extend Web3 functionality for [Ebakus](https://ebakus.com) blockchain.
 
 ## Installation
 
 ### Node.js
 
 ```bash
-npm install --save web3-ebakus
 npm install --save web3 # web3 is needed as dependency
+npm install --save web3-ebakus
 ```
 
 ### In the Browser

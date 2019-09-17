@@ -1,13 +1,13 @@
 {
   "name": "web3-ebakus",
-  "version": "1.0.0",
-  "description": "Web3 module to add transaction PoW for Ebakus.",
+  "version": "0.1.0",
+  "description": "Extend Web3 for Ebakus Blockchain",
   "homepage": "https://www.ebakus.com/",
-  "repository": "https://github.com/ebakus/web3-ebakus",
-  "author": {
-    "name": "Chris Ziogas",
-    "email": "chris@ebakus.com"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ebakus/web3-ebakus.git"
   },
+  "author": "Ebakus AG <chris@ebakus.com>",
   "license": "MIT",
   "browser": "lib/web3-ebakus.browser.js",
   "main": "lib/web3-ebakus.js",
@@ -16,7 +16,6 @@
   "files": [
     "lib/*"
   ],
-  "private": true,
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
     "clz-buffer": "^1.0.0",
@@ -75,5 +74,17 @@
       "git add"
     ]
   },
-  "browserslist": "> 0.25%, not dead"
+  "browserslist": "> 0.25%, not dead",
+  "bugs": {
+    "url": "https://github.com/ebakus/web3-ebakus/issues"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": [
+    "blockchain",
+    "ebakus",
+    "dapp",
+    "web3"
+  ]
 }

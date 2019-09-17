@@ -1,4 +1,6 @@
 webpack.config.babel.js
 .babelrc
 .eslintrc
+.editorconfig
 .gitignore
+.prettierrc
