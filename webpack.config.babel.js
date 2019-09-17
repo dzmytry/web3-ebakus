@@ -15,7 +15,7 @@ const IS_PRODUCTION = NODE_ENV === 'production'
 
 const banner = `${pkg.description} v${pkg.version}
 
-@author ${pkg.author.name} <${pkg.author.email}>
+@author ${pkg.author}
 @website ${pkg.homepage}
 
 @copyright Ebakus ${now.getFullYear()}
@@ -80,11 +80,6 @@ const baseConfig = {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
     extensions: ['.json', '.js'],
   },
-  externals: [
-    nodeExternals({
-      whitelist: ['web3', 'eth-lib'],
-    }),
-  ],
   stats: {
     colors: true,
   },
@@ -128,6 +123,11 @@ const serverConfig = {
   entry: {
     'web3-ebakus': ['@babel/polyfill', './src/index.js'],
   },
+  externals: [
+    nodeExternals({
+      whitelist: ['web3', 'eth-lib'],
+    }),
+  ],
   plugins: [
     new webpack.ProvidePlugin({
       Worker: ['worker_threads', 'Worker'],
