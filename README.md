@@ -40,15 +40,17 @@ You can also have a look at the [example page](example/index.html).
 
 ### web3.eth.suggestDifficulty(accountAddress)
 
-The `suggestDifficulty` retrieves the currently suggested difficulty of the network which can be used for `calculateWorkForTransaction`.
+The `suggestDifficulty` queries the node for the suggested target difficulty needed for the PoW in order for a transaction to enter a block taking into account current congestion levels and address stake. The difficulty will be used in `calculateWorkForTransaction`.
 
 ```js
-web3.eth.suggestDifficulty(accountAddress).then(difficulty => console.log)
+web3.eth
+  .suggestDifficulty(accountAddress)
+  .then(difficulty => console.log(difficulty))
 ```
 
 ### web3.eth.calculateWorkForTransaction(transaction, targetDifficulty, ctrlWorkForTransactionState, callback)
 
-The `calculateWorkForTransaction` calculates the PoW needed for a transaction in order to be added in a block by a block producer.
+The `calculateWorkForTransaction` calculates the PoW needed for a transaction to enter a block by a block producer.
 
 ```js
 const tx = {
@@ -96,3 +98,38 @@ The `ctrlWorkForTransactionState` and `callback` parameters are optional.
   ```
 
 - `callback`: you can read more [here](https://web3js.readthedocs.io/en/1.0/callbacks-promises-events.html)
+
+### web3.db.select(contractAddress, tableName, whereCondition, orderByColumn, blockNumber)
+
+The `db.select` allows performing selects with conditions ordered by column name.
+
+- `contractAddress`: contract address that created the DB tables
+- `tableName`: table name
+- `whereClause`: where condition for finding an entry
+  Supported conditions are "<", ">", "=", "==", "<=", ">=", "!=", "LIKE"
+  Example use case: Phone = "555-1111"
+  Id >= 3
+- `orderClause`: order clause for sorting the results using "ASC" or "DESC"
+  Example use case: Phone DESC
+- `blockNumber`: block number to read from EbakusDB state. You can use `latest` string for fetching from latest block.
+
+```js
+web3.db.select(contractAddress, tableName, whereCondition, orderByColumn, blockNumber)
+  .then(iterator =>
+    web3.db.next(iter).then(entry => console.log(entry)
+  )
+```
+
+### web3.db.next(iter)
+
+The `db.next` returns the next result of the select performed through `web3.db.select()`.
+
+### web3.db.get(contractAddress, tableName, whereCondition, orderByColumn, blockNumber)
+
+The `db.get` allows fetching a single item. Check for its params at `web3.db.select()`.
+
+```js
+web3.db
+  .get(contractAddress, tableName, whereCondition, orderByColumn, blockNumber)
+  .then(entry => console.log(entry))
+```
