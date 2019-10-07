@@ -187,6 +187,10 @@ const ebakus = web3 => {
     return account
   }
 
+  web3.eth.accounts.signTransaction = function(tx, privateKey, callback) {
+    return signTransaction(tx, privateKey, callback)
+  }
+
   signTransactionSetWeb3Provider(web3)
 
   // add ebakus db methods to web3
