@@ -26,6 +26,7 @@ const getOptimization = target => {
     return {}
   }
   return {
+    minimize: true,
     minimizer: [
       new TerserPlugin({
         cache: true,
@@ -75,6 +76,7 @@ const baseConfig = {
       amd: pkg.name,
       commonjs: pkg.name,
     },
+    globalObject: 'this',
   },
   resolve: {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
@@ -109,6 +111,11 @@ const clientConfig = {
   entry: {
     'web3-ebakus': ['@babel/polyfill', './src/browser.js'],
   },
+  externals: [
+    nodeExternals({
+      whitelist: ['web3'],
+    }),
+  ],
   output: {
     filename: '[name].browser.js',
   },
